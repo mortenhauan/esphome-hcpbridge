@@ -1,3 +1,13 @@
+# Morten's HCPBridge development fork
+
+Based on Tysonpower/esphome-hcpbridge at
+`a91b75c06e85809e48fee1c205e98d6dd8583e09`. MIT license retained.
+
+Experimental: the short Home Assistant outage/bus failure is not yet diagnosed.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for changes, checks and installation.
+
+---
+
 # esphome-hcpbridge
 
 [![GitHub](https://img.shields.io/github/license/14yannick/esphome-hcpbridge)](https://github.com/14yannick/esphome-hcpbridge/blob/main/LICENSE)

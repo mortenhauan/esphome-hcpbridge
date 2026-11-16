@@ -5,6 +5,7 @@
 #define MODBUSRTU_DEBUG 1
 
 #include <Arduino.h>
+#include <atomic>
 #include <Stream.h>
 
 #include "ModbusRTU.h"
@@ -79,7 +80,8 @@ public:
     bool relayOn = false;
     State state = CLOSED;
     String debugMessage = "initial";
-    unsigned long lastModbusRespone = 0;
+    std::atomic<uint32_t> lastModbusRespone{0};
+    std::atomic<bool> received_request_{false};
     bool changed = false;
     bool debMessage = false;
     float gotoPosition = 0.0f;

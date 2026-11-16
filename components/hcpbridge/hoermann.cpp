@@ -46,16 +46,6 @@ void HoermannGarageEngine::setup(int8_t rx, int8_t tx, int8_t rts)
   }
   mb.slave(SLAVE_ID);
 
-  xTaskCreatePinnedToCore(
-      modbusServeTask, /* Function to implement the task */
-      "ModBusTask",    /* Name of the task */
-      10000,           /* Stack size in words */
-      NULL,            /* Task input parameter */
-      // 1,  /* Priority of the task */
-      configMAX_PRIORITIES - 1,
-      &modBusTask, /* Task handle. */
-      1);          /* Core where the task should run */
-
   // Required for Write
   mb.addHreg(0x9C41, 0, 0x03); // Commands
   mb.addHreg(0x9D31, 0, 0x09); // Broadcast
@@ -84,6 +74,17 @@ void HoermannGarageEngine::setup(int8_t rx, int8_t tx, int8_t rts)
       HREG(0x9D31 + 6), [this](TRegister *reg, uint16_t val) -> uint16_t
       { return this->onRegSevenChanged(reg, val); }, // Relay and Light state
       0x01);
+  // Start only after all registers and callbacks are ready.
+  xTaskCreatePinnedToCore(
+      modbusServeTask, /* Function to implement the task */
+      "ModBusTask",    /* Name of the task */
+      10000,           /* Stack size in bytes on ESP32 */
+      NULL,            /* Task input parameter */
+      // 1,  /* Priority of the task */
+      configMAX_PRIORITIES - 1,
+      &modBusTask, /* Task handle. */
+      1);          /* Core where the task should run */
+
 }
 
 void HoermannGarageEngine::handleModbus()
@@ -131,7 +132,7 @@ Modbus::ResultCode HoermannGarageEngine::onRequest(Modbus::FunctionCode fc, cons
   }
   else
   {
-    this->state->debugMessage = "unknown function code fc=" + fc;
+    this->state->debugMessage = String("unknown function code fc=") + String(static_cast<unsigned int>(fc));
     this->state->debMessage = true;
     ESP_LOGW(TAG_HCI, "unknown function code fc=%x", fc);
   }
@@ -376,7 +377,8 @@ void HoermannState::setRelayOn(bool relayOn)
 }
 void HoermannState::recordModbusResponse()
 {
-  this->lastModbusRespone = millis();
+  this->lastModbusRespone.store(millis(), std::memory_order_relaxed);
+  this->received_request_.store(true, std::memory_order_release);
 }
 void HoermannState::clearChanged()
 {
@@ -389,16 +391,10 @@ void HoermannState::clearDebug()
 }
 long HoermannState::responseAge()
 {
-  if (this->lastModbusRespone == 0)
-  {
+  if (!this->received_request_.load(std::memory_order_acquire))
     return -1;
-  }
-  long diff = millis() - lastModbusRespone;
-  if (diff < 0)
-  {
-    return -2;
-  }
-  return diff / 1000;
+  const uint32_t last = this->lastModbusRespone.load(std::memory_order_relaxed);
+  return static_cast<uint32_t>(static_cast<uint32_t>(millis()) - last) / 1000;
 }
 void HoermannState::setState(State state)
 {

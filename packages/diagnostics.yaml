@@ -1,0 +1,24 @@
+# Optional diagnostics; include alongside the board package and fork source.
+debug:
+  update_interval: 10s
+
+sensor:
+  - platform: uptime
+    name: Bridge uptime
+    entity_category: diagnostic
+    update_interval: 10s
+  - platform: template
+    name: HCP last request age
+    entity_category: diagnostic
+    unit_of_measurement: s
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      const long age = id(hcpbridge_id).engine->state->responseAge();
+      return age < 0 ? NAN : static_cast<float>(age);
+
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: Bridge reset reason
+      entity_category: diagnostic

@@ -1,0 +1,29 @@
+# Build-only configuration; never upload this dummy-credential image.
+esphome:
+  name: hcpbridge-build-test
+  libraries:
+    - emelianov/modbus-esp8266
+esp32:
+  variant: esp32s3
+  framework:
+    type: arduino
+external_components:
+  - source:
+      type: local
+      path: ../components
+    components: [hcpbridge]
+packages:
+  diagnostics: !include ../packages/diagnostics.yaml
+logger:
+  level: WARN
+api:
+wifi:
+  ssid: build-test-only
+  password: build-test-only
+hcpbridge:
+  id: hcpbridge_id
+  rx_pin: 18
+  tx_pin: 17
+cover:
+  - platform: hcpbridge
+    name: Build test door
