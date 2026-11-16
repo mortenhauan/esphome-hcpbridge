@@ -1,0 +1,27 @@
+# Build-only integration fixture; dummy credentials, never upload.
+substitutions:
+  name: hcpbridge-merged-test
+  friendly_name: HCPBridge merged test
+packages:
+  board: github://Tysonpower/HCPBridgeMqtt_tynet/esphome.yaml@main
+  diagnostics: !include ../packages/diagnostics.yaml
+external_components:
+  - source:
+      type: local
+      path: ../components
+    components: [hcpbridge]
+esphome:
+  name_add_mac_suffix: false
+api:
+  encryption:
+    key: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=
+wifi:
+  ssid: !remove
+  password: !remove
+  networks:
+    - id: main
+      ssid: build-test-only
+      password: build-test-only
+    - id: iot
+      ssid: build-test-iot
+      password: build-test-only

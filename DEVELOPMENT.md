@@ -29,7 +29,7 @@ packages:
   tynet.hcpbridge_e4: github://Tysonpower/HCPBridgeMqtt_tynet/esphome.yaml@main
   hcp_diagnostics: github://mortenhauan/esphome-hcpbridge/packages/diagnostics.yaml@codex/bus-startup-diagnostics
 
-external_components: !override
+external_components:
   - source: github://mortenhauan/esphome-hcpbridge@codex/bus-startup-diagnostics
     components: [hcpbridge]
     refresh: 0s
@@ -56,3 +56,17 @@ Bus-loop gap instrumentation and protocol traces remain follow-up work.
 
 Rollback by removing the diagnostics package and external_components override,
 rebuilding the original board package and rescanning if needed.
+
+## Package merge correction and validation
+
+ESPHome does not support `!override`; use plain `external_components:` as above.
+The board package source is processed first and the device source last, taking
+precedence. `tests/verify_package_merge.py` validates the combined configuration
+and asserts that this fork's component was imported, rather than upstream.
+For local checks copy tests/secrets.example.yaml to tests/secrets.yaml first;
+all fixture credentials are dummy values.
+
+Verified with ESPHome 2026.10.2: standalone ESP32-S3 firmware compiled successfully,
+merged board configuration validated, fork source precedence assertion passed.
+No opener hardware verification has been performed. GitHub checks are currently
+blocked before execution by the account's billing lock.
